@@ -166,6 +166,7 @@ function handleSubmitName(e) {
 function paintHTML(stage) {
     container.innerHTML = userStageHTML(stage);
     const inputElement = document.querySelectorAll("input");
+    inputElement[0].focus();
     selectDocument(false, "input")(
         inputElement.length === 1 ? handleChangeName : handleChangeWeight,
         "input"
@@ -234,6 +235,7 @@ function paintCanvasChartJs(data) {
     if (!loading) {
         const div = document.createElement("div");
         const canvas = `<canvas id="chart" width="800" height="400"></canvas>`;
+        div.setAttribute("class", "canvas__container");
         div.innerHTML = canvas;
         container.appendChild(div);
         loading = true;
@@ -242,6 +244,10 @@ function paintCanvasChartJs(data) {
     ctx.getContext("2d");
 
     if (data) {
+        const canvasContainer = document.querySelector(".canvas__container");
+        if (canvasContainer.childNodes.length === 2) {
+            canvasContainer.removeChild(canvasContainer.childNodes[0]);
+        }
         const chart = new Chart(ctx, {
             type: "line",
             data: {
@@ -262,7 +268,6 @@ function paintCanvasChartJs(data) {
                     callbacks: {
                         labelColor: function (tooltipItem, chart) {
                             return {
-                                borderColor: "#333",
                                 backgroundColor: "#333",
                             };
                         },
@@ -277,17 +282,20 @@ function paintCanvasChartJs(data) {
             },
         });
     } else {
-        const cavasContainer = document.querySelector(".canvas__container");
+        const canvasContainer = document.querySelector(".canvas__container");
         const hElement = document.createElement("h2");
         hElement.innerText = "등록된 데이터가 아직 없습니다 :)";
-        cavasContainer.prepend(hElement);
+        canvasContainer.prepend(hElement);
     }
 }
 
+// 리셋합니다. 처음부터 다시 시작.
 function resetStage() {
     if (window.confirm("모든게 초기화 됩니다!")) {
+        loading = false;
         localStorage.removeItem("user");
         localStorage.removeItem("data");
+        chartData = [];
         init();
     }
 }
