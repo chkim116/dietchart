@@ -1,0 +1,117 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin-bottom: 3em;
+}
+
+input,
+button {
+    all: unset;
+}
+
+button {
+    cursor: pointer;
+}
+
+h1 {
+    margin: 24px 0;
+}
+
+h2 {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hellobox {
+    margin-top: 24px;
+    line-height: 38px;
+    border-bottom: 1px solid #dbdbdb;
+    text-align: center;
+}
+
+.user__weight {
+    font-weight: 700;
+    font-size: 20px;
+}
+
+.info__title {
+    margin: 36px 0;
+    font-size: 1.25rem;
+}
+
+.info__textbox {
+    display: flex;
+    align-items: center;
+}
+
+.info__form {
+    display: flex;
+    flex-direction: column;
+}
+
+.info__input {
+    padding: 4px 10px;
+    border: 1px solid #dbdbdb;
+    width: 250px;
+    height: 30px;
+    margin: 6px 0;
+}
+
+.info__btn {
+    padding: 4px 10px;
+    margin-top: 8px;
+    border: 1px solid #dbdbdb;
+    text-align: center;
+    cursor: pointer;
+    height: 30px;
+}
+
+.info__btn:disabled {
+    color: #ededed;
+    pointer-events: none;
+}
+
+.today__form {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+
+.today__state {
+    margin: 12px 0;
+    font-size: 20px;
+}
+
+.today__input {
+    border: 1px solid #dbdbdb;
+    padding: 6px;
+    width: 30px;
+}
+
+.today__working {
+    margin: 12px 0;
+    font-size: 20px;
+}
+
+.today__btn {
+    padding: 6px;
+    border: 1px solid #dbdbdb;
+    margin: 12px 0;
+}
+
+.reset-btn {
+    padding: 2px 6px;
+    border: 1px solid #dbdbdb;
+}
