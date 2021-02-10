@@ -234,7 +234,12 @@ function handleSubmitChart(e) {
 function paintCanvasChartJs(data) {
     if (!loading) {
         const div = document.createElement("div");
-        const canvas = `<canvas id="chart" width="800" height="400"></canvas>`;
+        let canvas;
+        if (window.innerWidth < 768) {
+            canvas = `<canvas id="chart" width="325" height="300"></canvas>`;
+        } else {
+            canvas = `<canvas id="chart" width="800" height="400"></canvas>`;
+        }
         div.setAttribute("class", "canvas__container");
         div.innerHTML = canvas;
         container.appendChild(div);
