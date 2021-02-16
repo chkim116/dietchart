@@ -1,14 +1,14 @@
-const container = document.querySelector(".container");
+const container = document.querySelector(".container")
 
-// 글로벌하게 사용하기 위함입니다.
-let loading;
+// 글로벌하게 사용하기 위함입니다!
+let loading
 
 // 유저 데이터 그릇입니다.
 const userData = {
     name: "",
     currentWeight: "0",
     goal: "0",
-};
+}
 
 // 첫 스테이지는 이름을 입력합니다.
 const stageOne = {
@@ -19,7 +19,7 @@ const stageOne = {
             text: "이름입력",
         },
     ],
-};
+}
 
 // 두번째 스테이지는 현재 몸무게와 목표 몸무게를 입력합니다.
 const stageTwo = {
@@ -34,64 +34,63 @@ const stageTwo = {
             text: "목표몸무게",
         },
     ],
-};
+}
 
 // 오늘 날짜를 가져옵니다.
 function getToday() {
-    const date = new Date();
+    const date = new Date()
     const month =
         date.getMonth() + 1 > 9
             ? `${date.getMonth() + 1}`
-            : `0${date.getMonth() + 1}`;
-    const days =
-        date.getDate() > 9 ? `${date.getDate()}` : `0${date.getDate()}`;
+            : `0${date.getMonth() + 1}`
+    const days = date.getDate() > 9 ? `${date.getDate()}` : `0${date.getDate()}`
 
-    const today = `${month}.${days}`;
-    return today;
+    const today = `${month}.${days}`
+    return today
 }
 
 // 스토리지 관련 함수, get, save, vaild
 function getStorage(key) {
-    return JSON.parse(localStorage.getItem(key));
+    return JSON.parse(localStorage.getItem(key))
 }
 
 function saveStorage(key, data) {
-    return localStorage.setItem(key, JSON.stringify(data));
+    return localStorage.setItem(key, JSON.stringify(data))
 }
 
 // 만약 조건이 맞으면 다음을 위한 함수가 실행됨
 function validCondition(condition, next) {
     if (condition) {
-        next();
+        next()
     }
 }
 
 //  버튼이 비활성화 될지, 활성화 될지 체크하는 함수
 function validDisableBtn(value) {
-    let done;
-    const btnElement = document.querySelector("button");
+    let done
+    const btnElement = document.querySelector("button")
 
     if (value && !done) {
-        btnElement.removeAttribute("disabled");
-        done = true;
+        btnElement.removeAttribute("disabled")
+        done = true
     } else {
-        btnElement.disabled = true;
-        done = false;
+        btnElement.disabled = true
+        done = false
     }
 }
 
 // 이벤트 등록을 위해 다큐먼트들을 셀렉하는 함수
 function selectDocument(select, name) {
     if (select) {
-        const element = document.querySelector(name);
+        const element = document.querySelector(name)
         return function (func, eventType) {
-            element.addEventListener(eventType, func);
-        };
+            element.addEventListener(eventType, func)
+        }
     } else {
-        const element = document.querySelectorAll(name);
+        const element = document.querySelectorAll(name)
         return function (func, eventType) {
-            element.forEach((el) => el.addEventListener(eventType, func));
-        };
+            element.forEach((el) => el.addEventListener(eventType, func))
+        }
     }
 }
 
@@ -103,18 +102,18 @@ function userStageHTML(stage) {
     <form class="info__form">
     ${stage.input
         .map((obj) => {
-            return `<input class="info__input" autocomplete="off" name=${obj.name} placeholder=${obj.text} />`;
+            return `<input class="info__input" autocomplete="off" name=${obj.name} placeholder=${obj.text} />`
         })
         .join("")}
         <button class="info__btn" disabled type="submit">확인</button>
     </form>
     </div>  
-    `;
+    `
 }
 
 // 차트 만드는 HTML
 function chartHTML() {
-    const user = getStorage("user");
+    const user = getStorage("user")
     return `
     <div class="hellobox">
     <div>${user.name}님 오늘도 화이팅!</div>
@@ -130,128 +129,128 @@ function chartHTML() {
     <span>kg</span>
     </div>
     <button class="today__btn type="submit">확인</button>
-    </form>`;
+    </form>`
 }
 
 function handleChangeName(e) {
-    const { value } = e.target;
+    const { value } = e.target
 
-    userData.name = value;
-    validDisableBtn(value);
+    userData.name = value
+    validDisableBtn(value)
 }
 
 function handleChangeWeight(e) {
-    const { name, value } = e.target;
+    const { name, value } = e.target
 
     if (name === "currentWeight") {
-        userData.currentWeight = value;
+        userData.currentWeight = value
     } else {
-        userData.goal = value;
+        userData.goal = value
     }
-    validDisableBtn(userData.currentWeight && userData.goal);
+    validDisableBtn(userData.currentWeight && userData.goal)
 }
 
 function handleSubmitFinish(e) {
-    e.preventDefault();
-    saveStorage("user", userData);
-    validCondition(getStorage("user"), paintChartStage);
+    e.preventDefault()
+    saveStorage("user", userData)
+    validCondition(getStorage("user"), paintChartStage)
 }
 
 function handleSubmitName(e) {
-    e.preventDefault();
-    paintHTML(stageTwo);
+    e.preventDefault()
+    paintHTML(stageTwo)
 }
 
 // 스테이지에 따른 HTML을 출력합니다.
 function paintHTML(stage) {
-    container.innerHTML = userStageHTML(stage);
-    const inputElement = document.querySelectorAll("input");
-    inputElement[0].focus();
+    container.innerHTML = userStageHTML(stage)
+    const inputElement = document.querySelectorAll("input")
+    inputElement[0].focus()
     selectDocument(false, "input")(
         inputElement.length === 1 ? handleChangeName : handleChangeWeight,
         "input"
-    );
+    )
     selectDocument(true, "form")(
         inputElement.length === 1 ? handleSubmitName : handleSubmitFinish,
         "submit"
-    );
+    )
 }
 
 // 글로벌하게 사용하기 위함입니다.
-let chartData = [];
-let todayWeight;
+let chartData = []
+let todayWeight
 
 // 맵핑합니다.
 function mapping(arr, filter) {
     if (Array.isArray(arr)) {
-        return arr.map(filter);
+        return arr.map(filter)
     }
 }
 
 // 필터합니다.
 function filtering(arr, filter) {
     if (Array.isArray(arr)) {
-        return arr.filter(filter);
+        return arr.filter(filter)
     }
 }
 
 function handleTodayChange(e) {
-    const { value } = e.target;
-    todayWeight = value;
+    const { value } = e.target
+    todayWeight = value
 }
 
 function handleSubmitChart(e) {
-    e.preventDefault();
+    e.preventDefault()
     const obj = {
         todayWeight,
         date: getToday(),
-    };
-    chartData.push(obj);
+    }
+    chartData.push(obj)
 
     if (getStorage("data")) {
-        const currentData = getStorage("data");
+        const currentData = getStorage("data")
         const existData = filtering(
             currentData,
             (obj) => obj.date === getToday()
-        );
+        )
         if (existData) {
             const refreshData = filtering(
                 currentData,
                 (obj) => obj.date !== getToday()
-            );
-            refreshData.push(obj);
-            saveStorage("data", refreshData);
-            paintCanvasChartJs(refreshData);
-            return;
+            )
+            refreshData.push(obj)
+            saveStorage("data", refreshData)
+            paintCanvasChartJs(refreshData)
+            return
         }
     }
-    saveStorage("data", chartData);
-    paintCanvasChartJs(chartData);
+    saveStorage("data", chartData)
+    paintCanvasChartJs(chartData)
 }
 
 // 캔버스에 차트를 그립니다.
 
 function paintCanvasChartJs(data) {
     if (!loading) {
-        const div = document.createElement("div");
-        let canvas;
+        const div = document.createElement("div")
+        let canvas
         if (window.innerWidth < 768) {
-            canvas = `<canvas id="chart" width="325" height="300"></canvas>`;
+            canvas = `<canvas id="chart" width="325" height="300"></canvas>`
         } else {
-            canvas = `<canvas id="chart" width="800" height="400"></canvas>`;
+            canvas = `<canvas id="chart" width="800" height="400"></canvas>`
         }
-        div.setAttribute("class", "canvas__container");
-        div.innerHTML = canvas;
-        container.appendChild(div);
-        loading = true;
+        div.setAttribute("class", "canvas__container")
+        div.innerHTML = canvas
+        container.appendChild(div)
+        loading = true
     }
-    const ctx = document.getElementById("chart");
-    ctx.getContext("2d");
+    const ctx = document.getElementById("chart")
+    ctx.getContext("2d")
 
     if (data) {
-        const canvasContainer = document.querySelector(".canvas__container");
+        const canvasContainer = document.querySelector(".canvas__container")
         if (canvasContainer.childNodes.length === 2) {
-            canvasContainer.removeChild(canvasContainer.childNodes[0]);
+            canvasContainer.removeChild(canvasContainer.childNodes[0])
         }
         const chart = new Chart(ctx, {
             type: "line",
@@ -274,10 +273,10 @@ function paintCanvasChartJs(data) {
                         labelColor: function (tooltipItem, chart) {
                             return {
                                 backgroundColor: "#333",
-                            };
+                            }
                         },
                         label: function (tooltipItem, data) {
-                            return tooltipItem.yLabel;
+                            return tooltipItem.yLabel
                         },
                     },
                 },
@@ -285,41 +284,41 @@ function paintCanvasChartJs(data) {
                     display: false,
                 },
             },
-        });
+        })
     } else {
-        const canvasContainer = document.querySelector(".canvas__container");
-        const hElement = document.createElement("h2");
-        hElement.innerText = "등록된 데이터가 아직 없습니다 :)";
-        canvasContainer.prepend(hElement);
+        const canvasContainer = document.querySelector(".canvas__container")
+        const hElement = document.createElement("h2")
+        hElement.innerText = "등록된 데이터가 아직 없습니다 :)"
+        canvasContainer.prepend(hElement)
     }
 }
 
 // 리셋합니다. 처음부터 다시 시작.
 function resetStage() {
     if (window.confirm("모든게 초기화 됩니다!")) {
-        loading = false;
-        localStorage.removeItem("user");
-        localStorage.removeItem("data");
-        chartData = [];
-        init();
+        loading = false
+        localStorage.removeItem("user")
+        localStorage.removeItem("data")
+        chartData = []
+        init()
     }
 }
 
 // 차트 스테이지를 그리고, 이벤트를 등록합니다.
 function paintChartStage(alreadyData) {
-    container.innerHTML = chartHTML();
-    paintCanvasChartJs(alreadyData);
-    selectDocument(true, ".reset-btn")(resetStage, "click");
-    selectDocument(false, "input")(handleTodayChange, "input");
-    selectDocument(true, "form")(handleSubmitChart, "submit");
+    container.innerHTML = chartHTML()
+    paintCanvasChartJs(alreadyData)
+    selectDocument(true, ".reset-btn")(resetStage, "click")
+    selectDocument(false, "input")(handleTodayChange, "input")
+    selectDocument(true, "form")(handleSubmitChart, "submit")
 }
 
 // 초기 시작시 실행되는 함수. 스토리지에 유저가 있으면 스토리지에 저장된 데이터를 사용해 바로 차트를 그립니다.
 function init() {
     if (getStorage("user")) {
-        return paintChartStage(getStorage("data") && getStorage("data"));
+        return paintChartStage(getStorage("data") && getStorage("data"))
     }
-    paintHTML(stageOne);
+    paintHTML(stageOne)
 }
 
-init();
+init()
