@@ -3,6 +3,7 @@ const container = document.querySelector(".container")
 // 글로벌하게 사용하기 위함입니다!
 let loading
 let workingLoading
+let together = false
 
 // 유저 데이터 그릇입니다.
 const userData = {
@@ -123,6 +124,7 @@ function chartWeightHTML() {
     <button type="button" class="reset-btn">다시 적기(차트초기화)</button>
     </div>
     <h1>오늘 살 빠졌죠?</h1>
+    <button type="button" class="together">운동기록이랑 같이 볼래요</button>
     <form class="today__form">
     <div class="today__state">오늘 몸무게</div>
     <div>
@@ -242,25 +244,34 @@ function handleSubmitChart(e) {
     }
     chartData.push(obj)
 
-    if (getStorage("data")) {
-        const currentData = getStorage("data")
-        const existData = filtering(
-            currentData,
-            (obj) => obj.date === getToday()
-        )
-        if (existData) {
-            const refreshData = filtering(
-                currentData,
-                (obj) => obj.date !== getToday()
-            )
-            refreshData.push(obj)
-            saveStorage("data", refreshData)
-            paintCanvasChartJs(refreshData)
-            return
-        }
-    }
+    // if (getStorage("data")) {
+    //     const currentData = getStorage("data")
+    //     const existData = filtering(
+    //         currentData,
+    //         (obj) => obj.date === getToday()
+    //     )
+    //     if (existData) {
+    //         const refreshData = filtering(
+    //             currentData,
+    //             (obj) => obj.date !== getToday()
+    //         )
+    //         refreshData.push(obj)
+    //         saveStorage("data", refreshData)
+    //         paintCanvasChartJs(refreshData)
+    //         return
+    //     }
+    // }
     saveStorage("data", chartData)
     paintCanvasChartJs(chartData)
+}
+
+function handleTogetherChart(e) {
+    const togetherBtn = document.querySelector(".together")
+    together = !together
+    together
+        ? togetherBtn.classList.add("clicked")
+        : togetherBtn.classList.remove("clicked")
+    paintCanvasChartJs(getStorage("data"), together)
 }
 
 function handleChangeChartType(e) {
@@ -390,7 +401,7 @@ function paintCanvasChartJsWorking(data, type) {
     }
 }
 
-function paintCanvasChartJs(data) {
+function paintCanvasChartJs(data, isTogether) {
     if (!loading) {
         const div = document.createElement("div")
         let canvas
@@ -416,24 +427,74 @@ function paintCanvasChartJs(data) {
             type: "line",
             data: {
                 labels: mapping(data, (obj) => obj.date),
-                datasets: [
-                    {
-                        backgroundColor: "#fd79a8",
-                        borderColor: "#fd79a8",
-                        data: mapping(data, (obj) => obj.todayWeight),
-                        fill: false,
-                        pointStyle: "rectRounded",
-                        pointRadius: 5,
-                        pointHoverRadius: 7,
-                    },
-                ],
+                datasets: !isTogether
+                    ? [
+                          {
+                              labels: ["kg"],
+                              backgroundColor: "#fd79a8",
+                              borderColor: "#fd79a8",
+                              data: mapping(data, (obj) => obj.todayWeight),
+                              fill: false,
+                              pointStyle: "rectRounded",
+                              pointRadius: 5,
+                              pointHoverRadius: 7,
+                          },
+                          {
+                              labels: ["kg"],
+                              backgroundColor: "red",
+                              borderColor: "red",
+                              fill: false,
+                              data: new Array(data.length).fill(
+                                  getStorage("user").goal
+                              ),
+                              pointRadius: 0,
+                              pointHoverRadius: 0,
+                          },
+                      ]
+                    : [
+                          {
+                              labels: ["kg"],
+                              backgroundColor: "#fd79a8",
+                              borderColor: "#fd79a8",
+                              data: mapping(data, (obj) => obj.todayWeight),
+                              fill: false,
+                              pointStyle: "rectRounded",
+                              pointRadius: 7,
+                              pointHoverRadius: 7,
+                          },
+                          {
+                              labels: ["분"],
+                              backgroundColor: "#0984e3 ",
+                              borderColor: "#0984e3",
+                              data: mapping(
+                                  getStorage("working"),
+                                  (obj) => `${+obj.hours * 60 + +obj.minutes}`
+                              ),
+                              fill: false,
+                              pointStyle: "rectRounded",
+                              pointRadius: 7,
+                              pointHoverRadius: 7,
+                          },
+                      ],
             },
 
             options: {
+                scales: {
+                    yAxes: [
+                        {
+                            ticks: {
+                                min: +getStorage("user").goal - 2,
+                            },
+                        },
+                    ],
+                },
                 tooltips: {
                     callbacks: {
                         label: function (tooltipItem, data) {
-                            return `${tooltipItem.yLabel}kg`
+                            const dataset =
+                                data.datasets[tooltipItem.datasetIndex]
+                            const yLabel = dataset.labels[0]
+                            return `${tooltipItem.yLabel}${yLabel}`
                         },
                     },
                 },
@@ -495,6 +556,7 @@ function paintChartStage(alreadyData) {
     selectDocument(true, ".today__form")(handleSubmitChart, "submit")
     selectDocument(true, ".working__form")(handleSubmitWorkingChart, "submit")
     selectDocument(false, ".working__type-btn")(handleChangeChartType, "click")
+    selectDocument(false, ".together")(handleTogetherChart, "click")
 }
 
 // 초기 시작시 실행되는 함수. 스토리지에 유저가 있으면 스토리지에 저장된 데이터를 사용해 바로 차트를 그립니다.

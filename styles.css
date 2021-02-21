@@ -139,3 +139,12 @@ h2 {
     background-color: #0984e3;
     color: #fff;
 }
+
+.together {
+    border: 1px solid #dbdbdb;
+    padding: 10px;
+}
+.together.clicked {
+    background-color: #0984e3;
+    color: #fff;
+}
