@@ -269,6 +269,31 @@ function handleSubmitChart(e) {
     paintCanvasChartJs(chartData)
 }
 
+function togetherDataWorking(a, b) {
+    let long
+    let short
+    let res = []
+    if (a > b) {
+        long = mapping(a, (list) => list.date)
+        short = mapping(b, (list) => list.date)
+        res = b
+    } else {
+        long = mapping(b, (list) => list.date)
+        short = mapping(a, (list) => list.date)
+        res = b
+    }
+
+    for (const a of long) {
+        if (!short.includes(a)) {
+            short.push(a)
+            res.push({ hours: "0", minutes: "0", date: a })
+        }
+    }
+    res.sort((a, b) => a.date - b.date)
+    console.log(res)
+    return res
+}
+
 function handleTogetherChart(e) {
     const togetherBtn = document.querySelector(".together")
     together = !together
@@ -280,7 +305,11 @@ function handleTogetherChart(e) {
     chart.remove()
     loading = false
 
-    paintCanvasChartJs(getStorage("data"), together)
+    paintCanvasChartJs(
+        getStorage("data"),
+        togetherDataWorking(getStorage("data"), getStorage("working")),
+        together
+    )
 }
 
 function handleChangeChartType(e) {
@@ -423,7 +452,7 @@ function paintCanvasChartJsWorking(data, type) {
     }
 }
 
-function paintCanvasChartJs(data, isTogether) {
+function paintCanvasChartJs(data, compareData, isTogether) {
     if (!loading) {
         const div = document.createElement("div")
         const mychart = document.querySelector("#mychart")
@@ -442,7 +471,7 @@ function paintCanvasChartJs(data, isTogether) {
     if (data) {
         const ctx = document.getElementById("chart")
         ctx.getContext("2d")
-        const { goal, todayWeight } = getStorage("user")
+        const { goal } = getStorage("user")
         const canvasContainer = document.querySelector(".canvas__container")
         if (canvasContainer.childNodes.length === 2) {
             canvasContainer.removeChild(canvasContainer.childNodes[0])
@@ -500,14 +529,7 @@ function paintCanvasChartJs(data, isTogether) {
                               backgroundColor: "#0984e3",
                               borderColor: "#0984e3",
                               data: mapping(
-                                  mapping(getStorage("working"), (obj) => ({
-                                      ...obj,
-                                      date: data.find(
-                                          (list) => list.date === obj.date
-                                      )
-                                          ? data.map((list) => list.date)[0]
-                                          : obj.date,
-                                  })),
+                                  compareData,
                                   (obj) => `${+obj.hours * 60 + +obj.minutes}`
                               ),
                               fill: false,
