@@ -133,7 +133,9 @@ function chartWeightHTML() {
     <span>kg</span>
     </div>
     <button class="today__btn type="submit">확인</button>
-    </form>`
+    </form>
+    <div id="mychart"></div>
+    `
 }
 
 function chartWorkingHTML() {
@@ -274,8 +276,8 @@ function handleTogetherChart(e) {
         ? togetherBtn.classList.add("clicked")
         : togetherBtn.classList.remove("clicked")
 
-    const ctx = document.getElementById("chart")
-    ctx.remove()
+    const chart = document.querySelector("#chart")
+    chart.remove()
     loading = false
 
     paintCanvasChartJs(getStorage("data"), together)
@@ -424,6 +426,7 @@ function paintCanvasChartJsWorking(data, type) {
 function paintCanvasChartJs(data, isTogether) {
     if (!loading) {
         const div = document.createElement("div")
+        const mychart = document.querySelector("#mychart")
         let canvas
         if (window.innerWidth < 768) {
             canvas = `<canvas id="chart" width="325" height="300"></canvas>`
@@ -432,7 +435,7 @@ function paintCanvasChartJs(data, isTogether) {
         }
         div.setAttribute("class", "canvas__container")
         div.innerHTML = canvas
-        container.appendChild(div)
+        mychart.appendChild(div)
         loading = true
     }
 
