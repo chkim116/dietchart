@@ -94,7 +94,8 @@ h2 {
     font-size: 20px;
 }
 
-.today__input {
+.today__input,
+.working__input {
     border: 1px solid #dbdbdb;
     padding: 6px;
     width: 30px;
@@ -105,7 +106,8 @@ h2 {
     font-size: 20px;
 }
 
-.today__btn {
+.today__btn,
+.working__btn {
     padding: 6px;
     border: 1px solid #dbdbdb;
     margin: 12px 0;
@@ -114,4 +116,26 @@ h2 {
 .reset-btn {
     padding: 2px 6px;
     border: 1px solid #dbdbdb;
+}
+
+.working__form {
+    text-align: center;
+    justify-content: center;
+}
+
+.working {
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+}
+
+.working__type-btn {
+    border: 1px solid #dbdbdb;
+    padding: 6px 12px;
+    margin: 6px;
+}
+
+.working__type-btn.clicked {
+    background-color: #0984e3;
+    color: #fff;
 }

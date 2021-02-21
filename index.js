@@ -2,6 +2,7 @@ const container = document.querySelector(".container")
 
 // 글로벌하게 사용하기 위함입니다!
 let loading
+let workingLoading
 
 // 유저 데이터 그릇입니다.
 const userData = {
@@ -112,7 +113,7 @@ function userStageHTML(stage) {
 }
 
 // 차트 만드는 HTML
-function chartHTML() {
+function chartWeightHTML() {
     const user = getStorage("user")
     return `
     <div class="hellobox">
@@ -121,7 +122,7 @@ function chartHTML() {
     <div>목표 몸무게 <span class="user__weight">${user.goal}kg</span> </div>
     <button type="button" class="reset-btn">다시 적기(차트초기화)</button>
     </div>
-    <h1>오늘 운동 하셨죠?</h1>
+    <h1>오늘 살 빠졌죠?</h1>
     <form class="today__form">
     <div class="today__state">오늘 몸무게</div>
     <div>
@@ -129,6 +130,27 @@ function chartHTML() {
     <span>kg</span>
     </div>
     <button class="today__btn type="submit">확인</button>
+    </form>`
+}
+
+function chartWorkingHTML() {
+    return `
+    <h1>오늘 운동도 했죠?</h1>
+    <form class="working__form">
+    <div>클릭해서 타입 바꾸기</div>
+    <button type="button" class="working__type-btn" data-type="line">Line</button>
+    <button type="button" class="working__type-btn" data-type="bar">Bar</button>
+    <div class="working">
+    <div>
+    <input class="working__input" name="hours"  autocomplete="off" type="text" />
+    <span>시간</span>
+    </div>
+    <div>
+    <input class="working__input" name="minutes"  autocomplete="off" type="text" />
+    <span>분</span> 
+    </div>
+    </div>
+    <button class="working__btn type="submit">확인</button>
     </form>`
 }
 
@@ -178,7 +200,9 @@ function paintHTML(stage) {
 
 // 글로벌하게 사용하기 위함입니다.
 let chartData = []
+let workingChartData = []
 let todayWeight
+let working = { hours: "", minutes: "" }
 
 // 맵핑합니다.
 function mapping(arr, filter) {
@@ -195,8 +219,19 @@ function filtering(arr, filter) {
 }
 
 function handleTodayChange(e) {
-    const { value } = e.target
-    todayWeight = value
+    const { name, value } = e.target
+
+    switch (name) {
+        case "todayWeight": {
+            return (todayWeight = value)
+        }
+        case "hours": {
+            return (working.hours = value)
+        }
+        case "minutes": {
+            return (working.minutes = value)
+        }
+    }
 }
 
 function handleSubmitChart(e) {
@@ -228,7 +263,132 @@ function handleSubmitChart(e) {
     paintCanvasChartJs(chartData)
 }
 
+function handleChangeChartType(e) {
+    if (
+        !document
+            .getElementById("working_chart")
+            .classList.contains("chartjs-render-monitor")
+    ) {
+        return alert("기록부터 하세요!")
+    }
+    const { type } = e.currentTarget.dataset
+    const typeBtn = document.querySelectorAll(".working__type-btn")
+    typeBtn.forEach((node) =>
+        node.dataset.type === type
+            ? node.classList.add("clicked")
+            : node.classList.remove("clicked")
+    )
+    saveStorage("type", type)
+    paintCanvasChartJsWorking(getStorage("working"), type)
+}
+
+function handleSubmitWorkingChart(e) {
+    e.preventDefault()
+    const obj = {
+        ...working,
+        date: getToday(),
+    }
+    workingChartData.push(obj)
+
+    if (getStorage("working")) {
+        const currentData = getStorage("working")
+        const existData = filtering(
+            currentData,
+            (obj) => obj.date === getToday()
+        )
+        if (existData) {
+            const refreshData = filtering(
+                currentData,
+                (obj) => obj.date !== getToday()
+            )
+            refreshData.push(obj)
+            saveStorage("working", refreshData)
+            paintCanvasChartJsWorking(
+                refreshData,
+                getStorage("type") ? getStorage("type") : "line"
+            )
+            return
+        }
+    }
+    saveStorage("working", workingChartData)
+    saveStorage("type", "line")
+    paintCanvasChartJsWorking(workingChartData, "line")
+}
+
 // 캔버스에 차트를 그립니다.
+
+function paintCanvasChartJsWorking(data, type) {
+    if (!workingLoading) {
+        const div = document.createElement("div")
+        let canvas
+        if (window.innerWidth < 768) {
+            canvas = `<canvas id="working_chart" width="325" height="300"></canvas>`
+        } else {
+            canvas = `<canvas id="working_chart" width="800" height="400"></canvas>`
+        }
+        div.setAttribute("class", "canvas__work_container")
+        div.innerHTML = canvas
+        container.appendChild(div)
+        workingLoading = true
+    }
+
+    if (data) {
+        const ctx = document.getElementById("working_chart")
+        ctx.getContext("2d")
+        const canvasContainer = document.querySelector(
+            ".canvas__work_container"
+        )
+        const typeBtn = document.querySelectorAll(".working__type-btn")
+        typeBtn.forEach((node) =>
+            node.dataset.type === type
+                ? node.classList.add("clicked")
+                : node.classList.remove("clicked")
+        )
+        if (canvasContainer.childNodes.length === 2) {
+            canvasContainer.removeChild(canvasContainer.childNodes[0])
+        }
+        const chart = new Chart(ctx, {
+            type,
+            data: {
+                labels: mapping(data, (obj) => obj.date),
+                datasets: [
+                    {
+                        backgroundColor: "#0984e3 ",
+                        borderColor: "#0984e3",
+                        data: mapping(
+                            data,
+                            (obj) => `${+obj.hours * 60 + +obj.minutes}`
+                        ),
+                        fill: false,
+                        pointStyle: "rectRounded",
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                    },
+                ],
+            },
+
+            options: {
+                tooltips: {
+                    callbacks: {
+                        label: function (tooltipItem, data) {
+                            return `${tooltipItem.yLabel}분`
+                        },
+                    },
+                },
+                legend: {
+                    display: false,
+                },
+            },
+        })
+    } else {
+        const canvasContainer = document.querySelector(
+            ".canvas__work_container"
+        )
+        const hElement = document.createElement("h2")
+        hElement.innerText = "등록된 운동 데이터가 아직 없습니다 :)"
+        canvasContainer.prepend(hElement)
+    }
+}
 
 function paintCanvasChartJs(data) {
     if (!loading) {
@@ -244,10 +404,10 @@ function paintCanvasChartJs(data) {
         container.appendChild(div)
         loading = true
     }
-    const ctx = document.getElementById("chart")
-    ctx.getContext("2d")
 
     if (data) {
+        const ctx = document.getElementById("chart")
+        ctx.getContext("2d")
         const canvasContainer = document.querySelector(".canvas__container")
         if (canvasContainer.childNodes.length === 2) {
             canvasContainer.removeChild(canvasContainer.childNodes[0])
@@ -258,11 +418,13 @@ function paintCanvasChartJs(data) {
                 labels: mapping(data, (obj) => obj.date),
                 datasets: [
                     {
-                        backgroundColor: "#fff",
-                        borderColor: "#333",
+                        backgroundColor: "#fd79a8",
+                        borderColor: "#fd79a8",
                         data: mapping(data, (obj) => obj.todayWeight),
                         fill: false,
                         pointStyle: "rectRounded",
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
                     },
                 ],
             },
@@ -270,13 +432,8 @@ function paintCanvasChartJs(data) {
             options: {
                 tooltips: {
                     callbacks: {
-                        labelColor: function (tooltipItem, chart) {
-                            return {
-                                backgroundColor: "#333",
-                            }
-                        },
                         label: function (tooltipItem, data) {
-                            return tooltipItem.yLabel
+                            return `${tooltipItem.yLabel}kg`
                         },
                     },
                 },
@@ -297,20 +454,47 @@ function paintCanvasChartJs(data) {
 function resetStage() {
     if (window.confirm("모든게 초기화 됩니다!")) {
         loading = false
+        workingLoading = false
         localStorage.removeItem("user")
         localStorage.removeItem("data")
+        localStorage.removeItem("working")
+        localStorage.removeItem("type")
         chartData = []
+        workingChartData = []
         init()
     }
 }
 
 // 차트 스테이지를 그리고, 이벤트를 등록합니다.
 function paintChartStage(alreadyData) {
-    container.innerHTML = chartHTML()
+    container.innerHTML = chartWeightHTML()
     paintCanvasChartJs(alreadyData)
+
+    const workingDiv = document.createElement("div") // 운동 차트
+    workingDiv.innerHTML = chartWorkingHTML()
+    container.appendChild(workingDiv)
+
+    if (getStorage("working")) {
+        const typeBtn = document.querySelectorAll(".working__type-btn")
+        typeBtn.forEach((node) =>
+            node.dataset.type === getStorage("type")
+                ? node.classList.add("clicked")
+                : node.classList.remove("clicked")
+        )
+
+        paintCanvasChartJsWorking(
+            getStorage("working"),
+            getStorage("type") ? getStorage("type") : "line"
+        )
+    } else {
+        paintCanvasChartJsWorking()
+    }
+
     selectDocument(true, ".reset-btn")(resetStage, "click")
     selectDocument(false, "input")(handleTodayChange, "input")
-    selectDocument(true, "form")(handleSubmitChart, "submit")
+    selectDocument(true, ".today__form")(handleSubmitChart, "submit")
+    selectDocument(true, ".working__form")(handleSubmitWorkingChart, "submit")
+    selectDocument(false, ".working__type-btn")(handleChangeChartType, "click")
 }
 
 // 초기 시작시 실행되는 함수. 스토리지에 유저가 있으면 스토리지에 저장된 데이터를 사용해 바로 차트를 그립니다.
