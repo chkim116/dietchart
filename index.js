@@ -3,7 +3,7 @@ const container = document.querySelector(".container")
 // 글로벌하게 사용하기 위함입니다!
 let loading
 let workingLoading
-let together = false
+let isTogether = false
 
 // 유저 데이터 그릇입니다.
 const userData = {
@@ -124,7 +124,9 @@ function chartWeightHTML() {
     <button type="button" class="reset-btn">다시 적기(차트초기화)</button>
     </div>
     <h1>오늘 살 빠졌죠?</h1>
+    <div class="button__form">
     <button type="button" class="together">운동기록이랑 같이 볼래요</button>
+    </div>
     <div class="reach_goal"></div>
     <form class="today__form">
     <div class="today">
@@ -290,16 +292,23 @@ function togetherDataWorking(a, b) {
         }
     }
     res.sort((a, b) => a.date - b.date)
-    console.log(res)
     return res
 }
 
-function handleTogetherChart(e) {
-    const togetherBtn = document.querySelector(".together")
-    together = !together
-    together
-        ? togetherBtn.classList.add("clicked")
-        : togetherBtn.classList.remove("clicked")
+function handleChangeTogetherType(e) {
+    if (!isTogether) {
+        return
+    }
+
+    const btn = document.querySelector(".change-btn")
+
+    if (getStorage("togetherType") === "bar") {
+        saveStorage("togetherType", "line")
+        btn.innerHTML = "운동 차트를 bar로"
+    } else {
+        saveStorage("togetherType", "bar")
+        btn.innerHTML = "운동 차트를 line으로"
+    }
 
     const chart = document.querySelector("#chart")
     chart.remove()
@@ -308,7 +317,41 @@ function handleTogetherChart(e) {
     paintCanvasChartJs(
         getStorage("data"),
         togetherDataWorking(getStorage("data"), getStorage("working")),
-        together
+        isTogether
+    )
+}
+
+function handleTogetherChart(e) {
+    const togetherBtn = document.querySelector(".together")
+    isTogether = !isTogether
+    isTogether
+        ? togetherBtn.classList.add("clicked")
+        : togetherBtn.classList.remove("clicked")
+
+    const alreadyBtn = document.querySelector(".change-btn")
+    if (!isTogether) {
+        alreadyBtn.remove()
+    } else {
+        const button = document.createElement("button")
+        const div = document.querySelector(".button__form")
+        button.setAttribute("type", "button")
+        button.setAttribute("class", "change-btn")
+        button.innerHTML =
+            getStorage("togetherType") === "line"
+                ? "운동 차트를 bar로"
+                : "운동 차트를 line으로"
+        button.addEventListener("click", handleChangeTogetherType)
+        div.appendChild(button)
+    }
+
+    const chart = document.querySelector("#chart")
+    chart.remove()
+    loading = false
+
+    paintCanvasChartJs(
+        getStorage("data"),
+        togetherDataWorking(getStorage("data"), getStorage("working")),
+        isTogether
     )
 }
 
@@ -526,6 +569,7 @@ function paintCanvasChartJs(data, compareData, isTogether) {
                           },
                           {
                               labels: ["분"],
+                              type: getStorage("togetherType"),
                               backgroundColor: "#0984e3",
                               borderColor: "#0984e3",
                               data: mapping(

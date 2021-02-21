@@ -160,3 +160,15 @@ h2 {
     margin-top: 8px;
     line-height: 20px;
 }
+
+.button__form {
+    display: flex;
+    flex-direction: column;
+}
+
+.change-btn {
+    padding: 6px 10px;
+    text-align: center;
+    border: 1px solid #dbdbdb;
+    margin-top: 4px;
+}
