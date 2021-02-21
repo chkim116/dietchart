@@ -272,6 +272,10 @@ function handleSubmitChart(e) {
 }
 
 function togetherDataWorking(a, b) {
+    if (a && b) {
+        return
+    }
+
     let long
     let short
     let res = []
@@ -305,14 +309,17 @@ function handleChangeTogetherType(e) {
     if (getStorage("togetherType") === "bar") {
         saveStorage("togetherType", "line")
         btn.innerHTML = "운동 차트를 bar로"
-    } else {
+    }
+    if (getStorage("togetherType") === "line") {
         saveStorage("togetherType", "bar")
         btn.innerHTML = "운동 차트를 line으로"
     }
 
     const chart = document.querySelector("#chart")
-    chart.remove()
-    loading = false
+    if (chart) {
+        chart.remove()
+        loading = false
+    }
 
     paintCanvasChartJs(
         getStorage("data"),
@@ -371,9 +378,13 @@ function handleChangeChartType(e) {
             : node.classList.remove("clicked")
     )
     saveStorage("type", type)
+
     const ctx = document.getElementById("working_chart")
-    ctx.remove()
-    workingLoading = false
+
+    if (ctx) {
+        ctx.remove()
+        workingLoading = false
+    }
     paintCanvasChartJsWorking(getStorage("working"), type)
 }
 
