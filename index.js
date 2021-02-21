@@ -125,9 +125,10 @@ function chartWeightHTML() {
     </div>
     <h1>오늘 살 빠졌죠?</h1>
     <button type="button" class="together">운동기록이랑 같이 볼래요</button>
+    <div class="reach_goal"></div>
     <form class="today__form">
-    <div class="today__state">오늘 몸무게</div>
-    <div>
+    <div class="today">
+    <div class="today__state">오늘 몸무게는?</div>
     <input class="today__input" name="todayWeight"  autocomplete="off" type="text" />
     <span>kg</span>
     </div>
@@ -244,23 +245,23 @@ function handleSubmitChart(e) {
     }
     chartData.push(obj)
 
-    // if (getStorage("data")) {
-    //     const currentData = getStorage("data")
-    //     const existData = filtering(
-    //         currentData,
-    //         (obj) => obj.date === getToday()
-    //     )
-    //     if (existData) {
-    //         const refreshData = filtering(
-    //             currentData,
-    //             (obj) => obj.date !== getToday()
-    //         )
-    //         refreshData.push(obj)
-    //         saveStorage("data", refreshData)
-    //         paintCanvasChartJs(refreshData)
-    //         return
-    //     }
-    // }
+    if (getStorage("data")) {
+        const currentData = getStorage("data")
+        const existData = filtering(
+            currentData,
+            (obj) => obj.date === getToday()
+        )
+        if (existData) {
+            const refreshData = filtering(
+                currentData,
+                (obj) => obj.date !== getToday()
+            )
+            refreshData.push(obj)
+            saveStorage("data", refreshData)
+            paintCanvasChartJs(refreshData)
+            return
+        }
+    }
     saveStorage("data", chartData)
     paintCanvasChartJs(chartData)
 }
@@ -423,6 +424,15 @@ function paintCanvasChartJs(data, isTogether) {
         if (canvasContainer.childNodes.length === 2) {
             canvasContainer.removeChild(canvasContainer.childNodes[0])
         }
+        const reachToGoal = document.querySelector(".reach_goal")
+        reachToGoal.innerHTML = `
+        <div>현재 무게 <span style="color: red">${
+            data[data.length - 1].todayWeight
+        }kg </span>
+        </div>
+        <div>목표 ${getStorage("user").goal}kg 까지 <span style="color: red">${
+            +getStorage("user").goal - +data[data.length - 1].todayWeight
+        }kg!!</span></div>`
         const chart = new Chart(ctx, {
             type: "line",
             data: {

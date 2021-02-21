@@ -89,8 +89,14 @@ h2 {
     text-align: center;
 }
 
+.today {
+    display: flex;
+    margin: 2px;
+    align-items: center;
+}
+
 .today__state {
-    margin: 12px 0;
+    margin: 12px 3px;
     font-size: 20px;
 }
 
@@ -147,4 +153,10 @@ h2 {
 .together.clicked {
     background-color: #0984e3;
     color: #fff;
+}
+
+.reach_goal {
+    text-align: center;
+    margin-top: 8px;
+    line-height: 20px;
 }
