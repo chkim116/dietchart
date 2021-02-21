@@ -272,7 +272,7 @@ function handleSubmitChart(e) {
 }
 
 function togetherDataWorking(a, b) {
-    if (a && b) {
+    if (a === null || b === null) {
         return
     }
 
@@ -309,8 +309,7 @@ function handleChangeTogetherType(e) {
     if (getStorage("togetherType") === "bar") {
         saveStorage("togetherType", "line")
         btn.innerHTML = "운동 차트를 bar로"
-    }
-    if (getStorage("togetherType") === "line") {
+    } else {
         saveStorage("togetherType", "bar")
         btn.innerHTML = "운동 차트를 line으로"
     }
@@ -329,6 +328,9 @@ function handleChangeTogetherType(e) {
 }
 
 function handleTogetherChart(e) {
+    if (!getStorage("data")) {
+        return alert("몸무게 차트부터 생성해 주세요")
+    }
     const togetherBtn = document.querySelector(".together")
     isTogether = !isTogether
     isTogether
@@ -336,7 +338,7 @@ function handleTogetherChart(e) {
         : togetherBtn.classList.remove("clicked")
 
     const alreadyBtn = document.querySelector(".change-btn")
-    if (!isTogether) {
+    if (!isTogether && alreadyBtn) {
         alreadyBtn.remove()
     } else {
         const button = document.createElement("button")
@@ -352,14 +354,16 @@ function handleTogetherChart(e) {
     }
 
     const chart = document.querySelector("#chart")
-    chart.remove()
-    loading = false
+    if (chart) {
+        chart.remove()
+        loading = false
 
-    paintCanvasChartJs(
-        getStorage("data"),
-        togetherDataWorking(getStorage("data"), getStorage("working")),
-        isTogether
-    )
+        paintCanvasChartJs(
+            getStorage("data"),
+            togetherDataWorking(getStorage("data"), getStorage("working")),
+            isTogether
+        )
+    }
 }
 
 function handleChangeChartType(e) {
@@ -384,8 +388,8 @@ function handleChangeChartType(e) {
     if (ctx) {
         ctx.remove()
         workingLoading = false
+        paintCanvasChartJsWorking(getStorage("working"), type)
     }
-    paintCanvasChartJsWorking(getStorage("working"), type)
 }
 
 function handleSubmitWorkingChart(e) {
