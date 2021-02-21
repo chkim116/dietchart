@@ -291,6 +291,9 @@ function handleChangeChartType(e) {
             : node.classList.remove("clicked")
     )
     saveStorage("type", type)
+    const ctx = document.getElementById("working_chart")
+    ctx.remove()
+    workingLoading = false
     paintCanvasChartJsWorking(getStorage("working"), type)
 }
 
@@ -359,8 +362,8 @@ function paintCanvasChartJsWorking(data, type) {
         if (canvasContainer.childNodes.length === 2) {
             canvasContainer.removeChild(canvasContainer.childNodes[0])
         }
-        const chart = new Chart(ctx, {
-            type,
+        workingChart = new Chart(ctx, {
+            type: type,
             data: {
                 labels: mapping(data, (obj) => obj.date),
                 datasets: [
