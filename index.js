@@ -262,9 +262,7 @@ function handleSubmitChart(e) {
             return
         }
     }
-    const ctx = document.getElementById("chart")
-    ctx.remove()
-    loading = false
+
     saveStorage("data", chartData)
     paintCanvasChartJs(chartData)
 }
@@ -275,6 +273,10 @@ function handleTogetherChart(e) {
     together
         ? togetherBtn.classList.add("clicked")
         : togetherBtn.classList.remove("clicked")
+
+    const ctx = document.getElementById("chart")
+    ctx.remove()
+    loading = false
 
     paintCanvasChartJs(getStorage("data"), together)
 }
