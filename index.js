@@ -365,7 +365,7 @@ function paintCanvasChartJsWorking(data, type) {
                 labels: mapping(data, (obj) => obj.date),
                 datasets: [
                     {
-                        backgroundColor: "#0984e3 ",
+                        backgroundColor: "#0984e3",
                         borderColor: "#0984e3",
                         data: mapping(
                             data,
@@ -380,6 +380,16 @@ function paintCanvasChartJsWorking(data, type) {
             },
 
             options: {
+                scales: {
+                    yAxes: [
+                        {
+                            ticks: {
+                                stepSize: 15,
+                                beginAtZero: true,
+                            },
+                        },
+                    ],
+                },
                 tooltips: {
                     callbacks: {
                         label: function (tooltipItem, data) {
@@ -430,9 +440,9 @@ function paintCanvasChartJs(data, isTogether) {
             data[data.length - 1].todayWeight
         }kg </span>
         </div>
-        <div>목표 ${getStorage("user").goal}kg 까지 <span style="color: red">${
+        <div>목표 ${getStorage("user").goal}kg 까지 <span style="color: red">${(
             +getStorage("user").goal - +data[data.length - 1].todayWeight
-        }kg!!</span></div>`
+        ).toFixed(1)}kg!!</span></div>`
         const chart = new Chart(ctx, {
             type: "line",
             data: {
@@ -446,7 +456,7 @@ function paintCanvasChartJs(data, isTogether) {
                               data: mapping(data, (obj) => obj.todayWeight),
                               fill: false,
                               pointStyle: "rectRounded",
-                              pointRadius: 5,
+                              pointRadius: 7,
                               pointHoverRadius: 7,
                           },
                           {
@@ -474,7 +484,7 @@ function paintCanvasChartJs(data, isTogether) {
                           },
                           {
                               labels: ["분"],
-                              backgroundColor: "#0984e3 ",
+                              backgroundColor: "#0984e3",
                               borderColor: "#0984e3",
                               data: mapping(
                                   getStorage("working"),
