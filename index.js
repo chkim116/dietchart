@@ -47,7 +47,7 @@ function getToday() {
             : `0${date.getMonth() + 1}`
     const days = date.getDate() > 9 ? `${date.getDate()}` : `0${date.getDate()}`
 
-    const today = `${month}.${days}`
+    const today = `${month}.${+days}`
     return today
 }
 
@@ -262,6 +262,9 @@ function handleSubmitChart(e) {
             return
         }
     }
+    const ctx = document.getElementById("chart")
+    ctx.remove()
+    loading = false
     saveStorage("data", chartData)
     paintCanvasChartJs(chartData)
 }
@@ -272,6 +275,7 @@ function handleTogetherChart(e) {
     together
         ? togetherBtn.classList.add("clicked")
         : togetherBtn.classList.remove("clicked")
+
     paintCanvasChartJs(getStorage("data"), together)
 }
 
@@ -433,6 +437,7 @@ function paintCanvasChartJs(data, isTogether) {
     if (data) {
         const ctx = document.getElementById("chart")
         ctx.getContext("2d")
+        const { goal, todayWeight } = getStorage("user")
         const canvasContainer = document.querySelector(".canvas__container")
         if (canvasContainer.childNodes.length === 2) {
             canvasContainer.removeChild(canvasContainer.childNodes[0])
@@ -443,10 +448,10 @@ function paintCanvasChartJs(data, isTogether) {
             data[data.length - 1].todayWeight
         }kg </span>
         </div>
-        <div>목표 ${getStorage("user").goal}kg 까지 <span style="color: red">${(
-            +getStorage("user").goal - +data[data.length - 1].todayWeight
+        <div>목표 ${goal}kg 까지 <span style="color: red">${(
+            +goal - +data[data.length - 1].todayWeight
         ).toFixed(1)}kg!!</span></div>`
-        const chart = new Chart(ctx, {
+        todayChart = new Chart(ctx, {
             type: "line",
             data: {
                 labels: mapping(data, (obj) => obj.date),
@@ -490,7 +495,14 @@ function paintCanvasChartJs(data, isTogether) {
                               backgroundColor: "#0984e3",
                               borderColor: "#0984e3",
                               data: mapping(
-                                  getStorage("working"),
+                                  mapping(getStorage("working"), (obj) => ({
+                                      ...obj,
+                                      date: data.find(
+                                          (list) => list.date === obj.date
+                                      )
+                                          ? data.map((list) => list.date)[0]
+                                          : obj.date,
+                                  })),
                                   (obj) => `${+obj.hours * 60 + +obj.minutes}`
                               ),
                               fill: false,
@@ -500,13 +512,13 @@ function paintCanvasChartJs(data, isTogether) {
                           },
                       ],
             },
-
             options: {
                 scales: {
                     yAxes: [
                         {
                             ticks: {
-                                min: +getStorage("user").goal - 2,
+                                min: isTogether ? 0 : +goal - 2,
+                                beginAtZero: isTogether ? true : false,
                             },
                         },
                     ],
